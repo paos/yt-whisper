@@ -151,6 +151,21 @@ Run the tests:
 pytest
 ```
 
+### Code Quality
+
+This project uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting, configured as a pre-commit hook. To set up pre-commit:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+To manually run the pre-commit hooks on all files:
+
+```bash
+pre-commit run --all-files
+```
+
 ## yt-whisper --help
 
 ```
