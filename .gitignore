@@ -7,3 +7,4 @@ __pycache__/
 .env
 
 yt_whisper/data/*
+/build/
