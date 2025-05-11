@@ -91,12 +91,18 @@ def transcribe_audio(audio_file: str, temp_dir: str) -> tuple[str, str]:
     return transcription, output_file
 
 
-def extract_metadata(metadata_file: str) -> dict:
-    """Extract video metadata from the info JSON file."""
+def extract_metadata(metadata_file: str) -> tuple[dict, dict]:
+    """Extract video metadata from the info JSON file.
+
+    Returns:
+        Tuple of (extracted_metadata, raw_metadata)
+    """
     try:
         with open(metadata_file) as f:
             data = json.load(f)
-        return {
+
+        # Extract the fields we specifically need for our database structure
+        extracted = {
             "title": data.get("title", "Unknown Title"),
             "channel": data.get("channel", "Unknown Channel"),
             "author": data.get("uploader", data.get("channel", "Unknown Author")),
@@ -104,9 +110,12 @@ def extract_metadata(metadata_file: str) -> dict:
             "duration": data.get("duration", 0),
             "description": data.get("description", ""),
         }
+
+        # Return both the extracted fields and the full raw metadata
+        return extracted, data
     except (json.JSONDecodeError, FileNotFoundError) as e:
         print(f"Error extracting metadata: {e}")
-        return {
+        empty_metadata = {
             "title": "Unknown Title",
             "channel": "Unknown Channel",
             "author": "Unknown Author",
@@ -114,6 +123,7 @@ def extract_metadata(metadata_file: str) -> dict:
             "duration": 0,
             "description": "",
         }
+        return empty_metadata, {}
 
 
 def download_and_transcribe(url: str, force: bool = False) -> dict:
@@ -140,7 +150,7 @@ def download_and_transcribe(url: str, force: bool = False) -> dict:
         audio_file, metadata_file = download_audio(youtube_id, temp_dir, force)
 
         # Extract metadata
-        metadata = extract_metadata(metadata_file)
+        metadata, raw_metadata = extract_metadata(metadata_file)
 
         # Transcribe the audio
         transcription, transcription_file = transcribe_audio(audio_file, temp_dir)
@@ -156,6 +166,7 @@ def download_and_transcribe(url: str, force: bool = False) -> dict:
             "duration": metadata["duration"],
             "description": metadata["description"],
             "transcription": transcription,
+            "metadata": raw_metadata,  # This is the complete raw metadata from YouTube
             "created_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
 

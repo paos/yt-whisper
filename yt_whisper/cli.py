@@ -20,6 +20,11 @@ def cli() -> None:
     This tool allows you to download the audio from YouTube videos
     and transcribe them using OpenAI's Whisper, saving the results
     to a local SQLite database.
+
+    Dependencies that should run from cmdline:
+    - `yt-dlp`: For downloading YouTube videos
+    - `whisper -f <audiofile.mp3>` that will output the transcription
+            to stdout - using OpenAI Whisper
     """
     pass
 

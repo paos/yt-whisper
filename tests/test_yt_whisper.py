@@ -53,6 +53,7 @@ def temp_db() -> Generator[str, None, None]:
     # Insert sample data
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+    #
     cursor.execute("""
                    INSERT INTO videos
                    VALUES ('sample123',
@@ -64,8 +65,9 @@ def temp_db() -> Generator[str, None, None]:
                            300,
                            'Sample description',
                            'This is a sample transcription.',
+                           '{"id": "sample123", "title": "Sample Video", "channel": "Sample Channel", "uploader": "Sample Author", "upload_date": "20240501", "duration": 300, "description": "Sample description", "width": 1280, "height": 720, "fps": 30}', # noqa: E501
                            '2024-05-01T12:00:00Z')
-                   """)
+                   """)  # noqa: E501
     conn.commit()
     conn.close()
 
@@ -89,7 +91,7 @@ def test_download_and_transcribe(
 
     # Create mock metadata file
     os.makedirs(temp_dir, exist_ok=True)
-    metadata_path = os.path.join(temp_dir, "ytw_metadata_dQw4w9WgXcQ.info.json")
+    metadata_path = os.path.join(temp_dir, "ytw_audio_dQw4w9WgXcQ.info.json")
     with open(metadata_path, "w") as f:
         f.write("""
         {
@@ -99,7 +101,10 @@ def test_download_and_transcribe(
             "uploader": "Test Author",
             "upload_date": "20240501",
             "duration": 212,
-            "description": "Test description"
+            "description": "Test description",
+            "width": 1280,
+            "height": 720,
+            "fps": 30
         }
         """)
 
@@ -107,6 +112,11 @@ def test_download_and_transcribe(
     transcript_path = os.path.join(temp_dir, "ytw_transcript_dQw4w9WgXcQ.txt")
     with open(transcript_path, "w") as f:
         f.write("This is a test transcription.")
+
+    # Create mock audio file to prevent the download
+    audio_path = os.path.join(temp_dir, "ytw_audio_dQw4w9WgXcQ.mp3")
+    with open(audio_path, "w") as f:
+        f.write("Mock audio content")
 
     # Mock the subprocess calls
     mock_subprocess_run.return_value = MagicMock(stdout="Test output")
@@ -129,6 +139,9 @@ def test_download_and_transcribe(
                     read=lambda: json.dumps(
                         {
                             "id": "dQw4w9WgXcQ",
+                            "width": 1280,
+                            "height": 720,
+                            "fps": 30,
                             "title": "Test Video",
                             "channel": "Test Channel",
                             "uploader": "Test Author",
@@ -152,8 +165,14 @@ def test_download_and_transcribe(
     assert result["id"] == "dQw4w9WgXcQ"
     assert result["title"] == "Test Video"
     assert result["channel"] == "Test Channel"
-    assert result["author"] == "Test Author"
     assert result["transcription"] == "This is a test transcription."
+    assert "metadata" in result
+    assert result["metadata"]["id"] == "dQw4w9WgXcQ"
+    assert result["metadata"]["title"] == "Test Video"
+    assert result["metadata"]["channel"] == "Test Channel"
+    assert "width" in result["metadata"]
+    assert result["metadata"]["width"] == 1280
+    assert result["metadata"]["fps"] == 30
 
     # Verify subprocess was called
     assert mock_subprocess_run.call_count >= 1
@@ -197,6 +216,22 @@ def test_transcribe_command(
         "author": "Test Author",
         "duration": 213,
         "transcription": "Test transcription",
+        "metadata": {
+            "id": "dQw4w9WgXcQ",
+            "title": "Test Video",
+            "channel": "Test Channel",
+            "uploader": "Test Author",
+            "upload_date": "20240511",
+            "duration": 213,
+            "description": "Test description",
+            "width": 1280,
+            "height": 720,
+            "fps": 30,
+            "formats": [{"format_id": "251", "ext": "webm", "acodec": "opus"}],
+            "thumbnails": [
+                {"url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"}
+            ],
+        },
         "created_at": "2024-05-11T12:00:00Z",
     }
 
@@ -269,6 +304,20 @@ def test_save_and_get_to_db(temp_db: str) -> None:
         "duration": 120,
         "description": "Test description",
         "transcription": "Test transcription content",
+        "metadata": {
+            "id": "testid123",
+            "title": "Test Title",
+            "channel": "Test Channel",
+            "uploader": "Test Author",
+            "upload_date": "20240511",
+            "duration": 120,
+            "description": "Test description",
+            "width": 1280,
+            "height": 720,
+            "format_id": "22",
+            "ext": "mp4",
+            "format": "mp4",
+        },
         "created_at": "2024-05-11T12:00:00Z",
     }
 
@@ -284,3 +333,8 @@ def test_save_and_get_to_db(temp_db: str) -> None:
     assert retrieved["channel"] == test_data["channel"]
     assert retrieved["author"] == test_data["author"]
     assert retrieved["transcription"] == test_data["transcription"]
+    assert retrieved["metadata"] == test_data["metadata"]
+    assert retrieved["metadata"]["id"] == "testid123"
+    assert retrieved["metadata"]["title"] == "Test Title"
+    assert retrieved["metadata"]["width"] == 1280
+    assert retrieved["metadata"]["format"] == "mp4"

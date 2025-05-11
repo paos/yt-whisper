@@ -1,4 +1,5 @@
 # yt_whisper/db.py
+import json
 import os
 import pathlib
 import sqlite3
@@ -7,19 +8,19 @@ import sqlite3
 def get_db_path() -> str:
     """
     Get the path to the database file.
-    Returns a path relative to the package source directory.
+    Returns the path to $HOME/.yt-whisper/logs.db
     """
-    # Get the directory where this module is located
-    module_dir = pathlib.Path(__file__).parent
+    # Use the user's home directory
+    home_dir = pathlib.Path.home()
 
-    # Create a data directory in the package directory
-    data_dir = module_dir / "data"
+    # Create .yt-whisper directory in the home directory
+    data_dir = home_dir / ".yt-whisper"
 
     # Create directory if it doesn't exist
     if not data_dir.exists():
         data_dir.mkdir(parents=True, exist_ok=True)
 
-    return str(data_dir / "youtube_transcripts.db")
+    return str(data_dir / "logs.db")
 
 
 def init_db(db_path: str | None = None) -> None:
@@ -42,6 +43,7 @@ def init_db(db_path: str | None = None) -> None:
         duration INTEGER,
         description TEXT,
         transcription TEXT NOT NULL,
+        metadata TEXT,
         created_at TEXT NOT NULL
     )
     """)
@@ -81,6 +83,7 @@ def save_to_db(data: dict, db_path: str | None = None) -> None:
             duration = ?,
             description = ?,
             transcription = ?,
+            metadata = ?,
             created_at = ?
         WHERE id = ?
         """,
@@ -93,6 +96,7 @@ def save_to_db(data: dict, db_path: str | None = None) -> None:
                 data.get("duration", 0),
                 data.get("description", ""),
                 data["transcription"],
+                json.dumps(data.get("metadata", {})),
                 data["created_at"],
                 data["id"],
             ),
@@ -104,8 +108,8 @@ def save_to_db(data: dict, db_path: str | None = None) -> None:
             """
         INSERT INTO videos (
             id, url, title, channel, author, upload_date, duration, description,
-            transcription, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            transcription, metadata, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 data["id"],
@@ -117,6 +121,7 @@ def save_to_db(data: dict, db_path: str | None = None) -> None:
                 data.get("duration", 0),
                 data.get("description", ""),
                 data["transcription"],
+                json.dumps(data.get("metadata", {})),
                 data["created_at"],
             ),
         )
@@ -144,7 +149,16 @@ def get_transcript(youtube_id: str, db_path: str | None = None) -> dict | None:
     conn.close()
 
     if row:
-        return dict(row)
+        result = dict(row)
+        # Parse metadata JSON if it exists
+        if result.get("metadata"):
+            try:
+                result["metadata"] = json.loads(result["metadata"])
+            except json.JSONDecodeError:
+                result["metadata"] = {}
+        else:
+            result["metadata"] = {}
+        return result
     else:
         return None
 
