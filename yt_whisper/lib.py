@@ -40,7 +40,7 @@ def download_audio(
         Tuple of (audio_file_path, metadata_file_path)
     """
     output_file = os.path.join(temp_dir, f"ytw_audio_{youtube_id}.mp3")
-    metadata_file = os.path.join(temp_dir, f"ytw_metadata_{youtube_id}.info.json")
+    metadata_file = os.path.join(temp_dir, f"ytw_audio_{youtube_id}.info.json")
 
     if os.path.exists(output_file) and not force:
         print(f"Using existing file: {output_file}")
@@ -139,11 +139,11 @@ def download_and_transcribe(url: str, force: bool = False) -> dict:
         # Download audio and get metadata
         audio_file, metadata_file = download_audio(youtube_id, temp_dir, force)
 
-        # Transcribe the audio
-        transcription, transcription_file = transcribe_audio(audio_file, temp_dir)
-
         # Extract metadata
         metadata = extract_metadata(metadata_file)
+
+        # Transcribe the audio
+        transcription, transcription_file = transcribe_audio(audio_file, temp_dir)
 
         # Prepare the result
         result = {
