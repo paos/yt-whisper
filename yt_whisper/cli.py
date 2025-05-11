@@ -22,10 +22,11 @@ def cli() -> None:
     to a local SQLite database.
 
     Dependencies that should run from cmdline:
-    - `yt-dlp`: For downloading YouTube videos
-    - `whisper -f <audiofile.mp3>` that will output the transcription
-            to stdout - using OpenAI Whisper
-    """
+
+    `yt-dlp`: For downloading YouTube videos
+
+    `whisper -f <audiofile.mp3>` that will output the transcription to stdout - using OpenAI Whisper
+    """  # noqa: E501
     pass
 
 
