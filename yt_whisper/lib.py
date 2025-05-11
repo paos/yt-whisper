@@ -6,7 +6,7 @@ import re
 import tempfile
 import pathlib
 from typing import Dict, Tuple, Optional
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 def extract_youtube_id(url: str) -> Optional[str]:
@@ -153,7 +153,7 @@ def download_and_transcribe(url: str, force: bool = False) -> Dict:
             "duration": metadata["duration"],
             "description": metadata["description"],
             "transcription": transcription,
-            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            "created_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         }
         
         # The temporary directory and all files in it will be automatically

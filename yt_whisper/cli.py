@@ -115,6 +115,7 @@ def get(youtube_id, db_path, output):
     else:
         click.echo(f"Title: {transcript['title']}")
         click.echo(f"Channel: {transcript.get('channel', 'Unknown')}")
+        click.echo(f"Author: {transcript.get('author', 'Unknown')}")
         click.echo(f"URL: https://www.youtube.com/watch?v={youtube_id}")
         click.echo("\nTranscription:")
         click.echo("-" * 40)
@@ -159,7 +160,7 @@ def list(limit, db_path, output_json):
         
         for t in transcripts:
             click.echo(f"ID: {t['id']} | Title: {t['title']}")
-            click.echo(f"Channel: {t.get('channel', 'Unknown')} | Created: {t['created_at']}")
+            click.echo(f"Channel: {t.get('channel', 'Unknown')} | Author: {t.get('author', 'Unknown')} | Created: {t['created_at']}")
             click.echo("-" * 80)
 
 
