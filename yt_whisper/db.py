@@ -189,3 +189,33 @@ def list_transcripts(limit: int = 10, db_path: str | None = None) -> list:
     conn.close()
 
     return [dict(row) for row in rows]
+
+
+def delete_video(youtube_id: str, db_path: str | None = None) -> bool:
+    """
+    Delete a video from the database.
+
+    Args:
+        youtube_id: The YouTube video ID to delete
+        db_path: Optional custom path to the database file
+
+    Returns:
+        bool: True if a video was deleted, False otherwise
+    """
+    if db_path is None:
+        db_path = get_db_path()
+
+    if not os.path.exists(db_path):
+        return False
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Try to delete the video
+    cursor.execute("DELETE FROM videos WHERE id = ?", (youtube_id,))
+    rows_affected = cursor.rowcount
+
+    conn.commit()
+    conn.close()
+
+    return rows_affected > 0

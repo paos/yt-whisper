@@ -7,7 +7,7 @@ from typing import TextIO
 import click
 
 from . import __version__
-from .db import get_db_path, get_transcript, list_transcripts, save_to_db
+from .db import delete_video, get_db_path, get_transcript, list_transcripts, save_to_db
 from .lib import download_and_transcribe, extract_youtube_id
 
 
@@ -226,6 +226,45 @@ def search(query: str, db_path: str | None) -> None:
         click.echo("-" * 80)
 
     click.echo("To view a transcript, use: yt-whisper get VIDEO_ID")
+
+
+@cli.command()
+@click.argument("youtube_id")
+@click.option("--db-path", help="Custom path to SQLite database", default=None)
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+def delete(youtube_id: str, db_path: str | None, yes: bool) -> None:
+    """
+    Delete a transcript from the database.
+
+    Example usage:
+        yt-whisper delete VIDEO_ID
+    """
+    # First check if the video exists
+    transcript = get_transcript(youtube_id, db_path)
+
+    if not transcript:
+        click.echo(f"Error: No transcript found for YouTube ID: {youtube_id}", err=True)
+        sys.exit(1)
+
+    if not yes:
+        click.echo("You are about to delete the following transcript:")
+        click.echo(f"Title: {transcript['title']}")
+        click.echo(f"Channel: {transcript.get('channel', 'Unknown')}")
+        click.echo(f"YouTube ID: {youtube_id}")
+        click.echo("\nThis action cannot be undone!")
+
+        if not click.confirm("Are you sure you want to delete this transcript?"):
+            click.echo("Operation cancelled.")
+            return
+
+    # Proceed with deletion
+    if delete_video(youtube_id, db_path):
+        click.echo(f"Successfully deleted transcript for video ID: {youtube_id}")
+    else:
+        click.echo(
+            f"Error: Failed to delete transcript for video ID: {youtube_id}", err=True
+        )
+        sys.exit(1)
 
 
 if __name__ == "__main__":

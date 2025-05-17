@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New `delete` command to remove specific video transcripts from the database
+- Confirmation prompt for deletion (can be skipped with `-y/--yes` flag)
+- Support for custom database path in the delete command
+
 ## [0.3.0] - 2025-05-17
 
 ### Changed
