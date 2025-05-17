@@ -55,12 +55,6 @@ def cli() -> None:
     help="Device to use for inference ('cpu' or 'cuda' if available)",
     default=None,
 )
-@click.option(
-    "--fp16/--no-fp16",
-    default=True,
-    help="Use FP16 precision (faster, requires CUDA)",
-    show_default=True,
-)
 def transcribe(
     url: str,
     force: bool,
@@ -69,7 +63,6 @@ def transcribe(
     model: str,
     language: str | None,
     device: str | None,
-    fp16: bool,
 ) -> None:
     """
     Download and transcribe a YouTube video.
@@ -94,15 +87,9 @@ def transcribe(
             click.echo("To force re-transcription, use the -f/--force flag")
             sys.exit(0)
 
-        # Prepare Whisper kwargs
-        whisper_kwargs = {
-            "device": device,
-            "fp16": fp16,
-        }
-
         # Download and transcribe
         result = download_and_transcribe(
-            url, force=force, model_name=model, language=language, **whisper_kwargs
+            url, force=force, model_name=model, language=language, device=device
         )
 
         # Print summary

@@ -105,7 +105,7 @@ def transcribe_audio(
     model = whisper.load_model(model_name, device=device)
 
     print(f"Transcribing {audio_file}...")
-    result = model.transcribe(audio_file, language=language)
+    result = model.transcribe(audio_file, language=language, fp16=False)
     transcription = result["text"]
 
     with open(output_file, "w", encoding="utf-8") as f:
