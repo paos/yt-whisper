@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "0420-yt-whisper"
-version = "0.1.1"
+name = "yt-whisper"
+version = "0.3.0"
 description = "Download and transcribe YouTube videos using Whisper"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -14,8 +14,27 @@ authors = [
 ]
 dependencies = [
     "click>=8.2.0",
-    "pip>=25.1.1",
-    "yt-dlp",
+    "openai-whisper>=20231117",
+    "yt-dlp>=2023.12.30",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+]
+
+dev = [
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.11.9",
+    "setuptools>=80.4.0",
+]
+
+test = [
+    "pytest>=8.3.5",
+    "pytest-cov>=4.1.0",
 ]
 
 [project.urls]
@@ -26,11 +45,3 @@ Changelog = "https://github.com/yourusername/yt-whisper/releases"
 
 [project.scripts]
 yt-whisper = "yt_whisper.cli:cli"
-
-[project.optional-dependencies]
-dev = [
-    "pre-commit>=4.2.0",
-    "pytest>=8.3.5",
-    "ruff>=0.11.9",
-    "setuptools>=80.4.0",
-]

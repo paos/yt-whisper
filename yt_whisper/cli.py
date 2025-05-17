@@ -20,12 +20,6 @@ def cli() -> None:
     This tool allows you to download the audio from YouTube videos
     and transcribe them using OpenAI's Whisper, saving the results
     to a local SQLite database.
-
-    Dependencies that should run from cmdline:
-
-    `yt-dlp`: For downloading YouTube videos
-
-    `whisper -f <audiofile.mp3>` that will output the transcription to stdout - using OpenAI Whisper
     """  # noqa: E501
     pass
 
@@ -45,7 +39,38 @@ def cli() -> None:
     default=None,
     type=click.Path(dir_okay=False),
 )
-def transcribe(url: str, force: bool, no_save: bool, db_path: str | None) -> None:
+@click.option(
+    "--model",
+    default="base",
+    help="Whisper model to use (tiny, base, small, medium, large)",
+    show_default=True,
+)
+@click.option(
+    "--language",
+    help="Language code (e.g., 'en', 'es', 'fr'). Auto-detected if not specified.",
+    default=None,
+)
+@click.option(
+    "--device",
+    help="Device to use for inference ('cpu' or 'cuda' if available)",
+    default=None,
+)
+@click.option(
+    "--fp16/--no-fp16",
+    default=True,
+    help="Use FP16 precision (faster, requires CUDA)",
+    show_default=True,
+)
+def transcribe(
+    url: str,
+    force: bool,
+    no_save: bool,
+    db_path: str | None,
+    model: str,
+    language: str | None,
+    device: str | None,
+    fp16: bool,
+) -> None:
     """
     Download and transcribe a YouTube video.
 
@@ -69,8 +94,16 @@ def transcribe(url: str, force: bool, no_save: bool, db_path: str | None) -> Non
             click.echo("To force re-transcription, use the -f/--force flag")
             sys.exit(0)
 
+        # Prepare Whisper kwargs
+        whisper_kwargs = {
+            "device": device,
+            "fp16": fp16,
+        }
+
         # Download and transcribe
-        result = download_and_transcribe(url, force)
+        result = download_and_transcribe(
+            url, force=force, model_name=model, language=language, **whisper_kwargs
+        )
 
         # Print summary
         click.echo(f"Successfully transcribed: {result['title']}")
@@ -206,3 +239,7 @@ def search(query: str, db_path: str | None) -> None:
         click.echo("-" * 80)
 
     click.echo("To view a transcript, use: yt-whisper get VIDEO_ID")
+
+
+if __name__ == "__main__":
+    cli()

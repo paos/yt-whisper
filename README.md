@@ -13,11 +13,23 @@ Install this tool using `pip`:
 pip install yt-whisper
 ```
 
+### Additional Setup
+
+1. Install FFmpeg (required by Whisper):
+   - On Ubuntu/Debian: `sudo apt update && sudo apt install ffmpeg`
+   - On macOS: `brew install ffmpeg`
+   - On Windows: Download from [FFmpeg's website](https://ffmpeg.org/download.html)
+
+2. For GPU acceleration (optional but recommended):
+   - Install PyTorch with CUDA support: [PyTorch Installation Guide](https://pytorch.org/get-started/locally/)
+   - Example for CUDA 11.8: `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118`
+
 ### Dependencies
 
 This tool requires:
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) for downloading YouTube audio
-- [whisper](https://github.com/openai/whisper) for transcription
+- [openai-whisper](https://github.com/openai/whisper) Python package for transcription
+- FFmpeg (required by Whisper)
 
 ## Usage
 
@@ -33,6 +45,30 @@ Force re-download and transcription:
 
 ```bash
 yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID -f
+```
+
+Use a larger model for better accuracy (but slower):
+
+```bash
+yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --model small
+```
+
+Specify the language (faster and more accurate if known):
+
+```bash
+yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --language en
+```
+
+Use CPU instead of CUDA (if available):
+
+```bash
+yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --device cpu
+```
+
+Disable FP16 (useful for older GPUs):
+
+```bash
+yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --no-fp16
 ```
 
 The tool automatically uses a temporary directory that is cleaned up after processing.
@@ -98,17 +134,27 @@ You can also use yt-whisper as a Python library:
 ```python
 from yt_whisper import download_and_transcribe
 
-# Download and transcribe a video (files are automatically cleaned up)
+# Basic usage
 result = download_and_transcribe("https://www.youtube.com/watch?v=VIDEO_ID")
 
-# Print information about the video
+# With custom parameters
+result = download_and_transcribe(
+    "https://www.youtube.com/watch?v=VIDEO_ID",
+    model_name="small",  # tiny, base, small, medium, large
+    language="en",       # optional, auto-detected if None
+    device="cuda",       # or "cpu"
+    fp16=True           # use FP16 precision (faster with CUDA)
+)
+
+# Access the results
 print(f"Title: {result['title']}")
 print(f"Channel: {result['channel']}")
 print(f"Author: {result['author']}")
 print(f"Duration: {result['duration']} seconds")
+print(f"Transcription: {result['transcription']}")
 
-# Print the transcription
-print(result['transcription'])
+# Access raw metadata
+print(f"Raw metadata: {result['metadata']}")
 ```
 
 Or interact with the database:
