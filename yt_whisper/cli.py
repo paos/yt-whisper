@@ -15,7 +15,7 @@ from .lib import download_and_transcribe, extract_youtube_id
 @click.version_option(version=__version__)
 def cli() -> None:
     """
-    YT-Whisper: Download and transcribe YouTube videos using Whisper.
+    yt-whisper: Download and transcribe YouTube videos using Whisper.
 
     This tool allows you to download the audio from YouTube videos
     and transcribe them using OpenAI's Whisper, saving the results

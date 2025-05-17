@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "0420-yt-whisper"
-version = "0.1.0"
+version = "0.1.1"
 description = "Download and transcribe YouTube videos using Whisper"
 readme = "README.md"
 requires-python = ">=3.12"

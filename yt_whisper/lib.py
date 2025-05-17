@@ -5,6 +5,9 @@ import re
 import subprocess
 import tempfile
 from datetime import UTC, datetime
+from typing import Any
+
+import yt_dlp
 
 
 def extract_youtube_id(url: str) -> str | None:
@@ -44,23 +47,32 @@ def download_audio(
 
     if os.path.exists(output_file) and not force:
         print(f"Using existing file: {output_file}")
-    else:
-        print(f"Downloading audio from YouTube (ID: {youtube_id})...")
-        cmd = [
-            "yt-dlp",
-            "-x",
-            "--audio-format",
-            "mp3",
-            "-o",
-            output_file,
-            f"https://www.youtube.com/watch?v={youtube_id}",
-            "--write-info-json",
-            "-o",
-            os.path.join(temp_dir, f"ytw_audio_{youtube_id}.%(ext)s"),
-            "--write-info-json",
-        ]
+        return output_file, metadata_file
 
-        subprocess.run(cmd, check=True)
+    print(f"Downloading audio from YouTube (ID: {youtube_id})...")
+
+    ydl_opts = {
+        "format": "bestaudio/best",
+        "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }
+        ],
+        "outtmpl": os.path.join(temp_dir, f"ytw_audio_{youtube_id}"),
+        "writethumbnail": False,
+        "writeinfojson": True,
+        "quiet": False,
+        "no_warnings": False,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([f"https://www.youtube.com/watch?v={youtube_id}"])
+    except Exception as e:
+        print(f"Error downloading video: {e}")
+        raise
 
     return output_file, metadata_file
 
@@ -91,21 +103,25 @@ def transcribe_audio(audio_file: str, temp_dir: str) -> tuple[str, str]:
     return transcription, output_file
 
 
-def extract_metadata(metadata_file: str) -> tuple[dict, dict]:
+def extract_metadata(metadata_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
     """Extract video metadata from the info JSON file.
 
     Returns:
         Tuple of (extracted_metadata, raw_metadata)
     """
     try:
-        with open(metadata_file) as f:
+        with open(metadata_file, encoding="utf-8") as f:
             data = json.load(f)
 
         # Extract the fields we specifically need for our database structure
+        # yt-dlp uses 'uploader' for the channel name and 'channel' might not be present
+        uploader = data.get("uploader") or "Unknown Author"
+        channel = data.get("channel") or uploader or "Unknown Channel"
+
         extracted = {
             "title": data.get("title", "Unknown Title"),
-            "channel": data.get("channel", "Unknown Channel"),
-            "author": data.get("uploader", data.get("channel", "Unknown Author")),
+            "channel": channel,
+            "author": uploader,
             "upload_date": data.get("upload_date", "Unknown Date"),
             "duration": data.get("duration", 0),
             "description": data.get("description", ""),
