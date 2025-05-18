@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yt-whisper"
-version = "0.4.0"
+version = "0.4.3"
 description = "Download and transcribe YouTube videos using Whisper"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -46,3 +46,11 @@ Changelog = "https://github.com/paos/yt-whisper/releases"
 
 [project.scripts]
 yt-whisper = "yt_whisper.cli:cli"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
+    "setuptools-scm>=8.3.1",
+]
