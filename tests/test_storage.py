@@ -15,7 +15,7 @@ class TestStorage(TestCase):
     def test_get_database_path_default(self) -> None:
         """Test getting the default database path."""
         db_path = get_database_path()
-        assert db_path.name == "transcriptions.db"
+        assert db_path.name == "logs.db"
         assert "yt-whisper" in str(db_path)
         assert db_path.parent.exists()
 
@@ -70,7 +70,7 @@ class TestStorage(TestCase):
                 # The path should start with our test path
                 assert str(db_path).startswith(test_path)
                 # The filename should be the default
-                assert db_path.name == "transcriptions.db"
+                assert db_path.name == "logs.db"
                 # The parent directory should be the test path
                 assert str(db_path.parent) == test_path
                 # The parent directory should exist (created by get_database_path)
