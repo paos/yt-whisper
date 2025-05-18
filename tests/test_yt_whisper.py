@@ -58,21 +58,39 @@ def temp_db() -> Generator[str, None, None]:
     # Insert sample data
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    #
-    cursor.execute("""
-                   INSERT INTO videos
-                   VALUES ('sample123',
-                           'https://www.youtube.com/watch?v=sample123',
-                           'Sample Video',
-                           'Sample Channel',
-                           'Sample Author',
-                           '20240501',
-                           300,
-                           'Sample description',
-                           'This is a sample transcription.',
-                           '{"id": "sample123", "title": "Sample Video", "channel": "Sample Channel", "uploader": "Sample Author", "upload_date": "20240501", "duration": 300, "description": "Sample description", "width": 1280, "height": 720, "fps": 30}', # noqa: E501
-                           '2024-05-01T12:00:00Z')
-                   """)  # noqa: E501
+    test_metadata = {
+        "id": "sample123",
+        "title": "Sample Video",
+        "channel": "Sample Channel",
+        "uploader": "Sample Author",
+        "upload_date": "20240501",
+        "duration": 300,
+        "description": "Sample description",
+        "width": 1280,
+        "height": 720,
+        "fps": 30,
+    }
+    cursor.execute(
+        """
+        INSERT INTO videos (
+            id, url, title, channel, author, upload_date,
+            duration, description, transcription, metadata, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "sample123",
+            "https://www.youtube.com/watch?v=sample123",
+            "Sample Video",
+            "Sample Channel",
+            "Sample Author",
+            "20240501",
+            300,
+            "Sample description",
+            "This is a sample transcription.",
+            json.dumps(test_metadata),
+            "2024-05-01T12:00:00Z",
+        ),
+    )
     conn.commit()
     conn.close()
 
@@ -264,10 +282,14 @@ def test_transcribe_command(
     assert "Channel: Test Channel" in result.output
     assert "Author: Test Author" in result.output
 
-    # Verify function calls
-    mock_download_and_transcribe.assert_called_once_with(
-        "https://www.youtube.com/watch?v=dQw4w9WgXcQ", False
-    )
+    # Verify function was called with expected arguments
+    mock_download_and_transcribe.assert_called_once()
+    args, kwargs = mock_download_and_transcribe.call_args
+    assert args[0] == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    assert kwargs["force"] is False
+    assert kwargs["model_name"] == "base"
+    assert kwargs["language"] is None
+    assert kwargs["device"] is None
     mock_save_to_db.assert_called_once()
 
 
