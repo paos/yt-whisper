@@ -8,7 +8,7 @@ from pathlib import Path
 from platformdirs import user_data_dir
 
 
-def get_database_path(db_name: str = "transcriptions.db") -> Path:
+def get_database_path(db_name: str = "logs.db") -> Path:
     """
     Returns the path to the SQLite database file, creating the parent
     directory if needed.
