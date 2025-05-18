@@ -39,10 +39,10 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/yt-whisper"
-Issues = "https://github.com/yourusername/yt-whisper/issues"
-CI = "https://github.com/yourusername/yt-whisper/actions"
-Changelog = "https://github.com/yourusername/yt-whisper/releases"
+Homepage = "https://github.com/paos/yt-whisper"
+Issues = "https://github.com/paos/yt-whisper/issues"
+CI = "https://github.com/paos/yt-whisper/actions"
+Changelog = "https://github.com/paos/yt-whisper/releases"
 
 [project.scripts]
 yt-whisper = "yt_whisper.cli:cli"
