@@ -20,14 +20,14 @@ pip install yt-whisper
    - On macOS: `brew install ffmpeg`
    - On Windows: Download from [FFmpeg's website](https://ffmpeg.org/download.html)
 
-2. For GPU acceleration (optional but recommended):
+2. For GPU acceleration (optional - will work fine without):
    - Install PyTorch with CUDA support: [PyTorch Installation Guide](https://pytorch.org/get-started/locally/)
    - Example for CUDA 11.8: `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118`
 
 ### Dependencies
 
 This tool requires:
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) for downloading YouTube audio
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) Python package for downloading YouTube audio
 - [openai-whisper](https://github.com/openai/whisper) Python package for transcription
 - FFmpeg (required by Whisper)
 
