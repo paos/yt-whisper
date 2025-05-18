@@ -2,11 +2,12 @@
 import json
 import os
 import re
-import subprocess
 import tempfile
 from datetime import UTC, datetime
 from typing import Any
 
+import torch
+import whisper
 import yt_dlp
 
 
@@ -77,13 +78,22 @@ def download_audio(
     return output_file, metadata_file
 
 
-def transcribe_audio(audio_file: str, temp_dir: str) -> tuple[str, str]:
+def transcribe_audio(
+    audio_file: str,
+    temp_dir: str,
+    model_name: str = "base",
+    language: str | None = None,
+    device: str | torch.device | None = None,
+) -> tuple[str, str]:
     """
-    Transcribe audio file using Whisper.
+    Transcribe audio file using Whisper Python library.
 
     Args:
         audio_file: Path to the audio file
         temp_dir: Temporary directory path
+        model_name: Name of the Whisper model to use
+        language: Language code (e.g., 'en', 'es', 'fr'). If None, will auto-detect.
+        device: Device to run the model on (e.g., 'cuda', 'cpu')
 
     Returns:
         Tuple of (transcription_text, transcription_file_path)
@@ -91,20 +101,24 @@ def transcribe_audio(audio_file: str, temp_dir: str) -> tuple[str, str]:
     youtube_id = os.path.basename(audio_file).split("_")[-1].split(".")[0]
     output_file = os.path.join(temp_dir, f"ytw_transcript_{youtube_id}.txt")
 
-    print(f"Running Whisper transcription on {audio_file}...")
-    cmd = ["whisper", "-f", audio_file]
+    print(f"Loading Whisper model: {model_name}...")
+    model = whisper.load_model(model_name, device=device)
 
-    with open(output_file, "w") as f:
-        subprocess.run(cmd, stdout=f, check=True)
+    print(f"Transcribing {audio_file}...")
+    result = model.transcribe(audio_file, language=language, fp16=False)
+    transcription = result["text"]
 
-    with open(output_file) as f:
-        transcription = f.read()
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(transcription)
 
     return transcription, output_file
 
 
 def extract_metadata(metadata_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
     """Extract video metadata from the info JSON file.
+
+    Args:
+        metadata_file: Path to the metadata JSON file
 
     Returns:
         Tuple of (extracted_metadata, raw_metadata)
@@ -142,7 +156,13 @@ def extract_metadata(metadata_file: str) -> tuple[dict[str, Any], dict[str, Any]
         return empty_metadata, {}
 
 
-def download_and_transcribe(url: str, force: bool = False) -> dict:
+def download_and_transcribe(
+    url: str,
+    force: bool = False,
+    model_name: str = "base",
+    language: str | None = None,
+    device: str | torch.device | None = None,
+) -> dict:
     """
     Main function to download and transcribe a YouTube video.
 
@@ -169,7 +189,13 @@ def download_and_transcribe(url: str, force: bool = False) -> dict:
         metadata, raw_metadata = extract_metadata(metadata_file)
 
         # Transcribe the audio
-        transcription, transcription_file = transcribe_audio(audio_file, temp_dir)
+        transcription, transcription_file = transcribe_audio(
+            audio_file,
+            temp_dir,
+            model_name=model_name,
+            language=language,
+            device=device,
+        )
 
         # Prepare the result
         result = {

@@ -7,7 +7,7 @@ from typing import TextIO
 import click
 
 from . import __version__
-from .db import get_db_path, get_transcript, list_transcripts, save_to_db
+from .db import delete_video, get_db_path, get_transcript, list_transcripts, save_to_db
 from .lib import download_and_transcribe, extract_youtube_id
 
 
@@ -20,12 +20,6 @@ def cli() -> None:
     This tool allows you to download the audio from YouTube videos
     and transcribe them using OpenAI's Whisper, saving the results
     to a local SQLite database.
-
-    Dependencies that should run from cmdline:
-
-    `yt-dlp`: For downloading YouTube videos
-
-    `whisper -f <audiofile.mp3>` that will output the transcription to stdout - using OpenAI Whisper
     """  # noqa: E501
     pass
 
@@ -45,7 +39,31 @@ def cli() -> None:
     default=None,
     type=click.Path(dir_okay=False),
 )
-def transcribe(url: str, force: bool, no_save: bool, db_path: str | None) -> None:
+@click.option(
+    "--model",
+    default="base",
+    help="Whisper model to use (tiny, base, small, medium, large)",
+    show_default=True,
+)
+@click.option(
+    "--language",
+    help="Language code (e.g., 'en', 'es', 'fr'). Auto-detected if not specified.",
+    default=None,
+)
+@click.option(
+    "--device",
+    help="Device to use for inference ('cpu' or 'cuda' if available)",
+    default=None,
+)
+def transcribe(
+    url: str,
+    force: bool,
+    no_save: bool,
+    db_path: str | None,
+    model: str,
+    language: str | None,
+    device: str | None,
+) -> None:
     """
     Download and transcribe a YouTube video.
 
@@ -70,7 +88,9 @@ def transcribe(url: str, force: bool, no_save: bool, db_path: str | None) -> Non
             sys.exit(0)
 
         # Download and transcribe
-        result = download_and_transcribe(url, force)
+        result = download_and_transcribe(
+            url, force=force, model_name=model, language=language, device=device
+        )
 
         # Print summary
         click.echo(f"Successfully transcribed: {result['title']}")
@@ -206,3 +226,46 @@ def search(query: str, db_path: str | None) -> None:
         click.echo("-" * 80)
 
     click.echo("To view a transcript, use: yt-whisper get VIDEO_ID")
+
+
+@cli.command()
+@click.argument("youtube_id")
+@click.option("--db-path", help="Custom path to SQLite database", default=None)
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+def delete(youtube_id: str, db_path: str | None, yes: bool) -> None:
+    """
+    Delete a transcript from the database.
+
+    Example usage:
+        yt-whisper delete VIDEO_ID
+    """
+    # First check if the video exists
+    transcript = get_transcript(youtube_id, db_path)
+
+    if not transcript:
+        click.echo(f"Error: No transcript found for YouTube ID: {youtube_id}", err=True)
+        sys.exit(1)
+
+    if not yes:
+        click.echo("You are about to delete the following transcript:")
+        click.echo(f"Title: {transcript['title']}")
+        click.echo(f"Channel: {transcript.get('channel', 'Unknown')}")
+        click.echo(f"YouTube ID: {youtube_id}")
+        click.echo("\nThis action cannot be undone!")
+
+        if not click.confirm("Are you sure you want to delete this transcript?"):
+            click.echo("Operation cancelled.")
+            return
+
+    # Proceed with deletion
+    if delete_video(youtube_id, db_path):
+        click.echo(f"Successfully deleted transcript for video ID: {youtube_id}")
+    else:
+        click.echo(
+            f"Error: Failed to delete transcript for video ID: {youtube_id}", err=True
+        )
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    cli()
