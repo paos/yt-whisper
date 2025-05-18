@@ -1,26 +1,17 @@
 # yt_whisper/db.py
 import json
 import os
-import pathlib
 import sqlite3
 
 
 def get_db_path() -> str:
     """
     Get the path to the database file.
-    Returns the path to $HOME/.yt-whisper/logs.db
+    Returns the path to the platform-specific logs.db location.
     """
-    # Use the user's home directory
-    home_dir = pathlib.Path.home()
+    from yt_whisper.storage import get_database_path
 
-    # Create .yt-whisper directory in the home directory
-    data_dir = home_dir / ".yt-whisper"
-
-    # Create directory if it doesn't exist
-    if not data_dir.exists():
-        data_dir.mkdir(parents=True, exist_ok=True)
-
-    return str(data_dir / "logs.db")
+    return str(get_database_path("logs.db"))
 
 
 def init_db(db_path: str | None = None) -> None:

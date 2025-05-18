@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-05-18
+
+### Changed
+- **BREAKING**: Moved database location to platform-specific directories:
+  - Linux: `~/.local/share/yt-whisper/`
+  - Windows: `%LOCALAPPDATA%\yt-whisper\`
+  - macOS: `~/Library/Application Support/yt-whisper/`
+- Added automatic migration of existing database from `~/.yt-whisper/logs.db` to the new location
+- Updated `platformdirs` to handle cross-platform paths
+
 ### Added
 - New `delete` command to remove specific video transcripts from the database
 - Confirmation prompt for deletion (can be skipped with `-y/--yes` flag)

@@ -4,11 +4,16 @@ import os
 import sqlite3
 import tempfile
 from collections.abc import Generator
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pytest
 from click.testing import CliRunner
 from pytest import MonkeyPatch
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 from yt_whisper.cli import cli
 from yt_whisper.db import get_transcript, init_db, save_to_db
@@ -53,21 +58,39 @@ def temp_db() -> Generator[str, None, None]:
     # Insert sample data
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    #
-    cursor.execute("""
-                   INSERT INTO videos
-                   VALUES ('sample123',
-                           'https://www.youtube.com/watch?v=sample123',
-                           'Sample Video',
-                           'Sample Channel',
-                           'Sample Author',
-                           '20240501',
-                           300,
-                           'Sample description',
-                           'This is a sample transcription.',
-                           '{"id": "sample123", "title": "Sample Video", "channel": "Sample Channel", "uploader": "Sample Author", "upload_date": "20240501", "duration": 300, "description": "Sample description", "width": 1280, "height": 720, "fps": 30}', # noqa: E501
-                           '2024-05-01T12:00:00Z')
-                   """)  # noqa: E501
+    test_metadata = {
+        "id": "sample123",
+        "title": "Sample Video",
+        "channel": "Sample Channel",
+        "uploader": "Sample Author",
+        "upload_date": "20240501",
+        "duration": 300,
+        "description": "Sample description",
+        "width": 1280,
+        "height": 720,
+        "fps": 30,
+    }
+    cursor.execute(
+        """
+        INSERT INTO videos (
+            id, url, title, channel, author, upload_date,
+            duration, description, transcription, metadata, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "sample123",
+            "https://www.youtube.com/watch?v=sample123",
+            "Sample Video",
+            "Sample Channel",
+            "Sample Author",
+            "20240501",
+            300,
+            "Sample description",
+            "This is a sample transcription.",
+            json.dumps(test_metadata),
+            "2024-05-01T12:00:00Z",
+        ),
+    )
     conn.commit()
     conn.close()
 
@@ -118,8 +141,13 @@ def test_download_and_transcribe(
     with open(audio_path, "w") as f:
         f.write("Mock audio content")
 
-    # Mock the subprocess calls
-    mock_subprocess_run.return_value = MagicMock(stdout="Test output")
+    # Mock the whisper.load_audio function to return dummy audio data
+    def mock_load_audio(file: str, sr: int = 16000) -> "npt.NDArray[np.float32]":
+        # Return a dummy numpy array with the right shape
+        return np.zeros(16000, dtype=np.float32)  # 1 second of silence at 16kHz
+
+    # Apply the mock
+    monkeypatch.setattr("whisper.audio.load_audio", mock_load_audio)
 
     # Patch open to read our mock files
     original_open = open
@@ -157,9 +185,17 @@ def test_download_and_transcribe(
             # Use the original open for other files
             return original_open(path, *args, **kwargs)
 
-    # Run the function
-    with patch("builtins.open", mock_open_read, create=True):
-        result = download_and_transcribe("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    # Create a mock Whisper model
+    mock_model = MagicMock()
+    mock_model.transcribe.return_value = {"text": "This is a test transcription."}
+
+    # Patch the necessary functions
+    with patch("whisper.load_model", return_value=mock_model):
+        with patch("builtins.open", mock_open_read, create=True):
+            # Run the function
+            result = download_and_transcribe(
+                "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            )
 
     # Verify the result
     assert result["id"] == "dQw4w9WgXcQ"
@@ -174,8 +210,8 @@ def test_download_and_transcribe(
     assert result["metadata"]["width"] == 1280
     assert result["metadata"]["fps"] == 30
 
-    # Verify subprocess was called
-    assert mock_subprocess_run.call_count >= 1
+    # Verify the model's transcribe method was called
+    mock_model.transcribe.assert_called_once()
 
 
 def test_get_transcript_command(temp_db: str) -> None:
@@ -246,10 +282,14 @@ def test_transcribe_command(
     assert "Channel: Test Channel" in result.output
     assert "Author: Test Author" in result.output
 
-    # Verify function calls
-    mock_download_and_transcribe.assert_called_once_with(
-        "https://www.youtube.com/watch?v=dQw4w9WgXcQ", False
-    )
+    # Verify function was called with expected arguments
+    mock_download_and_transcribe.assert_called_once()
+    args, kwargs = mock_download_and_transcribe.call_args
+    assert args[0] == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    assert kwargs["force"] is False
+    assert kwargs["model_name"] == "base"
+    assert kwargs["language"] is None
+    assert kwargs["device"] is None
     mock_save_to_db.assert_called_once()
 
 

@@ -4,17 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yt-whisper"
-version = "0.3.0"
+version = "0.4.0"
 description = "Download and transcribe YouTube videos using Whisper"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = {text = "Apache License, Version 2.0"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Pål Østerud", email = "pypi@paal.dk"}
 ]
 dependencies = [
     "click>=8.2.0",
     "openai-whisper>=20231117",
+    "platformdirs>=4.3.8",
     "yt-dlp>=2023.12.30",
 ]
 
@@ -38,10 +39,10 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/yt-whisper"
-Issues = "https://github.com/yourusername/yt-whisper/issues"
-CI = "https://github.com/yourusername/yt-whisper/actions"
-Changelog = "https://github.com/yourusername/yt-whisper/releases"
+Homepage = "https://github.com/paos/yt-whisper"
+Issues = "https://github.com/paos/yt-whisper/issues"
+CI = "https://github.com/paos/yt-whisper/actions"
+Changelog = "https://github.com/paos/yt-whisper/releases"
 
 [project.scripts]
 yt-whisper = "yt_whisper.cli:cli"

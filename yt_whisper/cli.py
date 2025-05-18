@@ -20,6 +20,12 @@ def cli() -> None:
     This tool allows you to download the audio from YouTube videos
     and transcribe them using OpenAI's Whisper, saving the results
     to a local SQLite database.
+
+    Database Location:
+      The database is stored in a platform-specific location:
+      - Linux:   ~/.local/share/yt-whisper/logs.db
+      - Windows: C:\\Users\\<user>\\AppData\\Local\\yt-whisper\\logs.db
+      - macOS:   ~/Library/Application Support/yt-whisper/logs.db
     """  # noqa: E501
     pass
 
