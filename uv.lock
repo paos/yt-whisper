@@ -854,11 +854,12 @@ wheels = [
 
 [[package]]
 name = "yt-whisper"
-version = "0.3.0"
+version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
     { name = "openai-whisper" },
+    { name = "platformdirs" },
     { name = "yt-dlp" },
 ]
 
@@ -883,6 +884,7 @@ test = [
 requires-dist = [
     { name = "click", specifier = ">=8.2.0" },
     { name = "openai-whisper", specifier = ">=20231117" },
+    { name = "platformdirs", specifier = ">=4.3.8" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.5" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.5" },
