@@ -5,12 +5,7 @@ Module for handling storage-related functionality including database paths.
 import sqlite3
 from pathlib import Path
 
-# Import migration functions
-from ._migration import run_migration as _run_migration
-
-# Run migration check on import
-if __name__ != "__main__":
-    _run_migration()
+from platformdirs import user_data_dir
 
 
 def get_database_path(db_name: str = "transcriptions.db") -> Path:
@@ -29,9 +24,14 @@ def get_database_path(db_name: str = "transcriptions.db") -> Path:
     Returns:
         Path: Path to the database file
     """
-    from ._migration import get_database_path as _get_database_path
+    # Get the platform-specific application data directory
+    app_dir = Path(user_data_dir("yt-whisper"))
 
-    return _get_database_path(db_name)
+    # Create the directory if it doesn't exist
+    app_dir.mkdir(parents=True, exist_ok=True)
+
+    # Return the path to the database file
+    return app_dir / db_name
 
 
 def get_database_file(filename: str) -> Path:
@@ -49,10 +49,6 @@ def get_database_file(filename: str) -> Path:
     return db_path
 
 
-if __name__ != "__main__":
-    _run_migration()
-
-
 def get_database_connection(db_name: str = "transcriptions.db") -> "sqlite3.Connection":
     """
     Get a connection to the SQLite database.
@@ -63,7 +59,5 @@ def get_database_connection(db_name: str = "transcriptions.db") -> "sqlite3.Conn
     Returns:
         sqlite3.Connection: Connection to the database
     """
-    import sqlite3
-
     db_path = get_database_path(db_name)
     return sqlite3.connect(str(db_path))

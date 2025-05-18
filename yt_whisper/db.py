@@ -9,7 +9,7 @@ def get_db_path() -> str:
     Get the path to the database file.
     Returns the path to the platform-specific logs.db location.
     """
-    from yt_whisper._migration import get_database_path
+    from yt_whisper.storage import get_database_path
 
     return str(get_database_path("logs.db"))
 

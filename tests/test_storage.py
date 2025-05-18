@@ -59,10 +59,8 @@ class TestStorage(TestCase):
             # Patch the user_data_dir function to return our test path
             with mock.patch("platformdirs.user_data_dir", return_value=test_path):
                 # Clear module cache to ensure we get fresh imports
-                modules_to_clear = ["yt_whisper._migration", "yt_whisper.storage"]
-                for module in modules_to_clear:
-                    if module in sys.modules:
-                        del sys.modules[module]
+                if "yt_whisper.storage" in sys.modules:
+                    del sys.modules["yt_whisper.storage"]
 
                 # Import after patching
                 from yt_whisper.storage import get_database_path
