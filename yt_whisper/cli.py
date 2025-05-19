@@ -14,19 +14,10 @@ from .lib import download_and_transcribe, extract_youtube_id
 @click.group()
 @click.version_option(version=__version__)
 def cli() -> None:
+    """Download and transcribe YouTube videos to sqliteusing Whisper.
+
+    Use the 'db' command to view the current database location.
     """
-    yt-whisper: Download and transcribe YouTube videos using Whisper.
-
-    This tool allows you to download the audio from YouTube videos
-    and transcribe them using OpenAI's Whisper, saving the results
-    to a local SQLite database.
-
-    Database Location:
-      The database is stored in a platform-specific location:
-      - Linux:   ~/.local/share/yt-whisper/logs.db
-      - Windows: C:\\Users\\<user>\\AppData\\Local\\yt-whisper\\logs.db
-      - macOS:   ~/Library/Application Support/yt-whisper/logs.db
-    """  # noqa: E501
     pass
 
 
@@ -229,9 +220,32 @@ def search(query: str, db_path: str | None) -> None:
 
 
 @cli.command()
+def db() -> None:
+    """Show the current database path and usage information."""
+    current_path = get_db_path()
+    click.echo(f"Current database path: {click.style(current_path, fg='green')}")
+    click.echo(
+        "\nTo use a custom database path, use the --db-path option with any command:"
+    )
+    click.echo("  yt-whisper transcribe URL --db-path /path/to/custom.db")
+    click.echo("  yt-whisper get VIDEO_ID --db-path /path/to/custom.db")
+    click.echo("\nThe database will be created automatically if it doesn't exist.")
+
+
+@cli.command()
 @click.argument("youtube_id")
-@click.option("--db-path", help="Custom path to SQLite database", default=None)
-@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+@click.option(
+    "--db-path",
+    help="Custom path to SQLite database",
+    default=None,
+    type=click.Path(dir_okay=False),
+)
+@click.option(
+    "--yes",
+    "--force",
+    is_flag=True,
+    help="Skip confirmation prompt",
+)
 def delete(youtube_id: str, db_path: str | None, yes: bool) -> None:
     """
     Delete a transcript from the database.

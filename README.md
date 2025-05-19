@@ -76,15 +76,35 @@ yt-whisper search "search query"
 
 ### Database Location
 
-By default, transcripts are stored in:
-```
-yt_whisper/data/youtube_transcripts.db
-```
+#### CLI Usage
+When using the command-line interface, the database is stored in a platform-specific location:
+- **Linux**: `~/.local/share/yt-whisper/logs.db`
+- **macOS**: `~/Library/Application Support/yt-whisper/logs.db`
+- **Windows**: `C:\Users\<user>\AppData\Local\yt-whisper\logs.db`
 
-Specify a custom database path:
+You can specify a custom database path with the `--db-path` option:
 ```bash
 yt-whisper transcribe URL --db-path ./custom.db
 ```
+
+#### Library Usage
+When using yt-whisper as a Python library, the default database path follows the same platform-specific locations as the CLI. However, you can override this by passing a custom path to any function that interacts with the database:
+
+```python
+# Using default database location
+result = download_and_transcribe("https://www.youtube.com/watch?v=VIDEO_ID")
+
+# Using a custom database location
+result = download_and_transcribe(
+    "https://www.youtube.com/watch?v=VIDEO_ID",
+    db_path="./custom.db"
+)
+
+# Getting a transcript with a custom database path
+transcript = get_transcript("VIDEO_ID", db_path="./custom.db")
+```
+
+All database-related functions accept an optional `db_path` parameter that allows you to specify a custom location for the database file.
 
 ### Additional Options
 
