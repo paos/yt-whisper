@@ -19,12 +19,6 @@ dependencies = [
     "yt-dlp>=2023.12.30",
 ]
 
-[project.optional-dependencies]
-gpu = [
-    "torch>=2.0.0",
-    "torchaudio>=2.0.0",
-]
-
 dev = [
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
