@@ -289,7 +289,6 @@ def test_transcribe_command(
     assert kwargs["force"] is False
     assert kwargs["model_name"] == "base"
     assert kwargs["language"] is None
-    assert kwargs["device"] is None
     mock_save_to_db.assert_called_once()
 
 

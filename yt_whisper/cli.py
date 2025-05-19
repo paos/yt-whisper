@@ -56,11 +56,6 @@ def cli() -> None:
     help="Language code (e.g., 'en', 'es', 'fr'). Auto-detected if not specified.",
     default=None,
 )
-@click.option(
-    "--device",
-    help="Device to use for inference ('cpu' or 'cuda' if available)",
-    default=None,
-)
 def transcribe(
     url: str,
     force: bool,
@@ -68,7 +63,6 @@ def transcribe(
     db_path: str | None,
     model: str,
     language: str | None,
-    device: str | None,
 ) -> None:
     """
     Download and transcribe a YouTube video.
@@ -95,7 +89,7 @@ def transcribe(
 
         # Download and transcribe
         result = download_and_transcribe(
-            url, force=force, model_name=model, language=language, device=device
+            url, force=force, model_name=model, language=language
         )
 
         # Print summary

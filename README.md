@@ -3,131 +3,104 @@
 [![PyPI](https://img.shields.io/pypi/v/yt-whisper.svg)](https://pypi.org/project/yt-whisper/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/yourusername/yt-whisper/blob/master/LICENSE)
 
-Download and transcribe YouTube videos using Whisper, saving transcripts to a local SQLite database.
+A command-line tool to download and transcribe YouTube videos using OpenAI's Whisper, with local storage of transcripts in SQLite.
 
-## Installation
+## Quick Start
 
-Install this tool using `pip`:
+1. Install with pip:
+   ```bash
+   pip install yt-whisper
+   ```
 
-```bash
-pip install yt-whisper
-```
+2. Install FFmpeg (required):
+   ```bash
+   # On macOS
+   brew install ffmpeg
 
-### Additional Setup
+   # On Ubuntu/Debian
+   sudo apt update && sudo apt install ffmpeg
 
-1. Install FFmpeg (required by Whisper):
-   - On Ubuntu/Debian: `sudo apt update && sudo apt install ffmpeg`
-   - On macOS: `brew install ffmpeg`
-   - On Windows: Download from [FFmpeg's website](https://ffmpeg.org/download.html)
+   # On Windows (using Chocolatey)
+   choco install ffmpeg
+   ```
 
-2. For GPU acceleration (optional - will work fine without):
-   - Install PyTorch with CUDA support: [PyTorch Installation Guide](https://pytorch.org/get-started/locally/)
-   - Example for CUDA 11.8: `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118`
+3. Start transcribing videos:
+   ```bash
+   yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID
+   ```
 
-### Dependencies
+## CLI Reference
 
-This tool requires:
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) Python package for downloading YouTube audio
-- [openai-whisper](https://github.com/openai/whisper) Python package for transcription
-- FFmpeg (required by Whisper)
-
-## Usage
-
-### Basic Transcription
+### Transcribe Videos
 
 Download and transcribe a YouTube video:
-
 ```bash
 yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID
 ```
 
-Force re-download and transcription:
-
+Force re-download and re-transcription:
 ```bash
-yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID -f
+yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --force
 ```
 
-Use a larger model for better accuracy (but slower):
-
+Use a specific Whisper model (tiny, base, small, medium, large):
 ```bash
 yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --model small
 ```
 
-Specify the language (faster and more accurate if known):
+### Retrieve Transcripts
 
-```bash
-yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --language en
-```
-
-Use CPU instead of CUDA (if available):
-
-```bash
-yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --device cpu
-```
-
-Disable FP16 (useful for older GPUs):
-
-```bash
-yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --no-fp16
-```
-
-The tool automatically uses a temporary directory that is cleaned up after processing.
-
-
-### Retrieving Transcripts
-
-Get a transcript from the database:
-
+Get a transcript by video ID:
 ```bash
 yt-whisper get VIDEO_ID
 ```
 
-Save the transcript to a file:
-
+Save transcript to a file:
 ```bash
 yt-whisper get VIDEO_ID --output transcript.txt
 ```
 
-### Managing Transcripts
+### Search and List
 
-List your recent transcripts:
-
+List recent transcripts:
 ```bash
 yt-whisper list
 ```
 
-List more transcripts:
-
+Search through all transcripts:
 ```bash
-yt-whisper list --limit 20
+yt-whisper search "search query"
 ```
 
-Output as JSON:
+## Advanced Usage
 
-```bash
-yt-whisper list --json
+### Database Location
+
+By default, transcripts are stored in:
+```
+yt_whisper/data/youtube_transcripts.db
 ```
 
-### Searching Transcripts
-
-Search through your transcripts:
-
+Specify a custom database path:
 ```bash
-yt-whisper search "climate change"
+yt-whisper transcribe URL --db-path ./custom.db
 ```
 
-## Database
+### Additional Options
 
-Transcripts are stored in a SQLite database located in the package's data directory:
-`yt_whisper/data/youtube_transcripts.db`
-
-You can specify a custom database path with the `--db-path` option:
-
+Specify language (faster and more accurate if known):
 ```bash
-yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID --db-path ./my_database.db
+yt-whisper transcribe URL --language en
 ```
 
-## Using as a Python Library
+## Dependencies
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - YouTube video downloading
+- [openai-whisper](https://github.com/openai/whisper) - Speech-to-text transcription
+- FFmpeg - Audio processing
+
+## Usage
+
+## Python API
 
 You can also use yt-whisper as a Python library:
 
@@ -157,7 +130,7 @@ print(f"Transcription: {result['transcription']}")
 print(f"Raw metadata: {result['metadata']}")
 ```
 
-Or interact with the database:
+### Database Access
 
 ```python
 from yt_whisper.db import save_to_db, get_transcript
@@ -169,7 +142,40 @@ if transcript:
     print(transcript['transcription'])
 ```
 
+## Requirements
+
+- Python 3.8 or higher
+- FFmpeg (installed via system package manager)
+
 ## Development
+
+To contribute to this tool, first checkout the code:
+
+```bash
+git clone https://github.com/yourusername/yt-whisper.git
+cd yt-whisper
+```
+
+Create a new virtual environment:
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+Install the dependencies and development dependencies:
+
+```bash
+pip install -e '.[test]'
+```
+
+Run the tests:
+
+```bash
+pytest
+```
+
+### Code Quality
 
 To contribute to this tool, first checkout the code:
 

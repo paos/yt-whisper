@@ -6,7 +6,6 @@ import tempfile
 from datetime import UTC, datetime
 from typing import Any
 
-import torch
 import whisper
 import yt_dlp
 
@@ -83,7 +82,6 @@ def transcribe_audio(
     temp_dir: str,
     model_name: str = "base",
     language: str | None = None,
-    device: str | torch.device | None = None,
 ) -> tuple[str, str]:
     """
     Transcribe audio file using Whisper Python library.
@@ -93,7 +91,6 @@ def transcribe_audio(
         temp_dir: Temporary directory path
         model_name: Name of the Whisper model to use
         language: Language code (e.g., 'en', 'es', 'fr'). If None, will auto-detect.
-        device: Device to run the model on (e.g., 'cuda', 'cpu')
 
     Returns:
         Tuple of (transcription_text, transcription_file_path)
@@ -102,7 +99,7 @@ def transcribe_audio(
     output_file = os.path.join(temp_dir, f"ytw_transcript_{youtube_id}.txt")
 
     print(f"Loading Whisper model: {model_name}...")
-    model = whisper.load_model(model_name, device=device)
+    model = whisper.load_model(model_name)
 
     print(f"Transcribing {audio_file}...")
     result = model.transcribe(audio_file, language=language, fp16=False)
@@ -161,7 +158,6 @@ def download_and_transcribe(
     force: bool = False,
     model_name: str = "base",
     language: str | None = None,
-    device: str | torch.device | None = None,
 ) -> dict:
     """
     Main function to download and transcribe a YouTube video.
@@ -194,7 +190,6 @@ def download_and_transcribe(
             temp_dir,
             model_name=model_name,
             language=language,
-            device=device,
         )
 
         # Prepare the result
