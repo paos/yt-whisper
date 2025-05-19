@@ -168,7 +168,7 @@ def list(limit: int, db_path: str | None, output_json: bool) -> None:
 @click.option("--db-path", help="Custom path to SQLite database", default=None)
 def search(query: str, db_path: str | None) -> None:
     """
-    Search for transcripts containing the given query.
+    Search for keyword in title, author, channel, and description.
 
     Example usage:
         yt-whisper search "climate change"
@@ -186,15 +186,18 @@ def search(query: str, db_path: str | None) -> None:
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Simple full-text search
+    # Search in author, channel, and description fields
     cursor.execute(
         """
-    SELECT id, title, channel, created_at
+    SELECT id, title, channel, author, description, created_at
     FROM videos
-    WHERE transcription LIKE ? OR title LIKE ?
+    WHERE title LIKE ?
+       OR channel LIKE ?
+       OR author LIKE ?
+       OR description LIKE ?
     ORDER BY created_at DESC
     """,
-        (f"%{query}%", f"%{query}%"),
+        (f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"),
     )
 
     rows = cursor.fetchall()
