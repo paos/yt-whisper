@@ -3,7 +3,7 @@ import json
 import os
 import re
 import tempfile
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import whisper
@@ -204,7 +204,7 @@ def download_and_transcribe(
             "description": metadata["description"],
             "transcription": transcription,
             "metadata": raw_metadata,  # This is the complete raw metadata from YouTube
-            "created_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
 
         # The temporary directory and all files in it will be automatically
