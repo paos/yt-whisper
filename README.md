@@ -130,15 +130,6 @@ from yt_whisper import download_and_transcribe
 # Basic usage
 result = download_and_transcribe("https://www.youtube.com/watch?v=VIDEO_ID")
 
-# With custom parameters
-result = download_and_transcribe(
-    "https://www.youtube.com/watch?v=VIDEO_ID",
-    model_name="small",  # tiny, base, small, medium, large
-    language="en",       # optional, auto-detected if None
-    device="cuda",       # or "cpu"
-    fp16=True           # use FP16 precision (faster with CUDA)
-)
-
 # Access the results
 print(f"Title: {result['title']}")
 print(f"Channel: {result['channel']}")
@@ -164,7 +155,7 @@ if transcript:
 
 ## Requirements
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - FFmpeg (installed via system package manager)
 
 ## Development
@@ -172,27 +163,27 @@ if transcript:
 To contribute to this tool, first checkout the code:
 
 ```bash
-git clone https://github.com/yourusername/yt-whisper.git
+git clone https://github.com/paos/yt-whisper.git
 cd yt-whisper
 ```
 
 Create a new virtual environment:
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+uv venv --python 3.10
+source venv/bin/activate
 ```
 
 Install the dependencies and development dependencies:
 
 ```bash
-pip install -e '.[test]'
+uv run pip install -e '.[test]'
 ```
 
 Run the tests:
 
 ```bash
-pytest
+uv run pytest
 ```
 
 ### Code Quality
