@@ -19,12 +19,14 @@ dependencies = [
     "yt-dlp>=2023.12.30",
 ]
 
+[project.optional-dependencies]
 dev = [
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
     "pytest-cov>=4.1.0",
     "ruff>=0.11.9",
     "setuptools>=80.4.0",
+    "setuptools-scm>=8.3.1",
 ]
 
 test = [
@@ -40,11 +42,3 @@ Changelog = "https://github.com/paos/yt-whisper/releases"
 
 [project.scripts]
 yt-whisper = "yt_whisper.cli:cli"
-
-[dependency-groups]
-dev = [
-    "pre-commit>=4.2.0",
-    "pytest>=8.3.5",
-    "pytest-cov>=6.1.1",
-    "setuptools-scm>=8.3.1",
-]
