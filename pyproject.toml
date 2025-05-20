@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yt-whisper"
+version = "1.0.2"
+description = "Download and transcribe YouTube videos using Whisper"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache License, Version 2.0"}
+authors = [
+    {name = "Pål Østerud", email = "pypi@paal.dk"}
+]
+dependencies = [
+    "click>=8.2.0",
+    "openai-whisper>=20231117",
+    "platformdirs>=4.3.8",
+    "yt-dlp>=2023.12.30",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.11.9",
+    "setuptools>=80.4.0",
+    "setuptools-scm>=8.3.1",
+]
+
+test = [
+    "pytest>=8.3.5",
+    "pytest-cov>=4.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/paos/yt-whisper"
+Issues = "https://github.com/paos/yt-whisper/issues"
+CI = "https://github.com/paos/yt-whisper/actions"
+Changelog = "https://github.com/paos/yt-whisper/releases"
+
+[project.scripts]
+yt-whisper = "yt_whisper.cli:cli"
