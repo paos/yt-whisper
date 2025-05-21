@@ -8,7 +8,7 @@ import click
 
 from . import __version__
 from .db import delete_video, get_db_path, get_transcript, list_transcripts, save_to_db
-from .lib import download_and_transcribe, extract_youtube_id
+from .lib import download_and_transcribe, extract_youtube_id, is_ffmpeg_available
 
 
 @click.group()
@@ -61,6 +61,17 @@ def transcribe(
     Example usage:
         yt-whisper transcribe https://www.youtube.com/watch?v=VIDEO_ID
     """
+    # Check for FFmpeg first
+    if not is_ffmpeg_available():
+        click.echo(
+            "Error: FFmpeg is not installed or not found in your system's PATH. "
+            "FFmpeg is required for audio processing. "
+            "Please install it and try again. "
+            "You can find installation instructions at https://ffmpeg.org/download.html",
+            err=True,
+        )
+        sys.exit(1)
+
     try:
         # Validate URL
         youtube_id = extract_youtube_id(url)

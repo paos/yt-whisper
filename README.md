@@ -30,6 +30,7 @@ Download and transcribe YouTube videos using OpenAI's Whisper.
    # On Windows (using Chocolatey)
    choco install ffmpeg
    ```
+   The application will automatically check if FFmpeg is installed and accessible in your system's PATH before attempting to transcribe. If FFmpeg is not found, an error message will be displayed to guide you.
 
 3. Transcribe your first video:
    ```bash

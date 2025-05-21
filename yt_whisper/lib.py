@@ -2,12 +2,14 @@
 import json
 import os
 import re
+import subprocess
 import tempfile
 from datetime import datetime, timezone
 from typing import Any
 
 import whisper
 import yt_dlp
+from yt_dlp.utils import DownloadError
 
 
 def extract_youtube_id(url: str) -> str | None:
@@ -26,6 +28,25 @@ def extract_youtube_id(url: str) -> str | None:
             return match.group(1)
 
     return None
+
+
+def is_ffmpeg_available() -> bool:
+    """Check if FFmpeg is installed and available in PATH."""
+    try:
+        # Run ffmpeg -version, capture output to prevent console printing
+        result = subprocess.run(
+            ["ffmpeg", "-version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,  # Raise CalledProcessError for non-zero exit codes
+        )
+        return result.returncode == 0
+    except FileNotFoundError:
+        # FFmpeg command not found
+        return False
+    except subprocess.CalledProcessError:
+        # FFmpeg found but returned an error (e.g., -version not supported, though unlikely)
+        return False
 
 
 def download_audio(
@@ -70,8 +91,16 @@ def download_audio(
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([f"https://www.youtube.com/watch?v={youtube_id}"])
+    except DownloadError:
+        # Specific error for download issues
+        print(
+            "Error: Failed to download video. "
+            "Please check your network connection and the video URL."
+        )
+        raise
     except Exception as e:
-        print(f"Error downloading video: {e}")
+        # Catch any other unexpected errors during download
+        print(f"An unexpected error occurred during download: {e}")
         raise
 
     return output_file, metadata_file
