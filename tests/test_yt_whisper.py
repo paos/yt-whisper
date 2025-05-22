@@ -232,13 +232,18 @@ def test_get_transcript_command(temp_db: str) -> None:
 @patch("yt_whisper.cli.download_and_transcribe")
 @patch("yt_whisper.cli.save_to_db")
 @patch("yt_whisper.cli.get_transcript")
-def test_transcribe_command(
+@patch("yt_whisper.cli.is_ffmpeg_available") # Mock ffmpeg check
+def test_transcribe_command_ffmpeg_available(
+    mock_is_ffmpeg_available: MagicMock,
     mock_get_transcript: MagicMock,
     mock_save_to_db: MagicMock,
     mock_download_and_transcribe: MagicMock,
 ) -> None:
-    """Test the 'transcribe' command."""
+    """Test the 'transcribe' command when FFmpeg is available."""
     runner = CliRunner()
+
+    # Mock FFmpeg as available
+    mock_is_ffmpeg_available.return_value = True
 
     # Mock the get_transcript function to return None (video not in DB)
     mock_get_transcript.return_value = None
@@ -290,6 +295,29 @@ def test_transcribe_command(
     assert kwargs["model_name"] == "base"
     assert kwargs["language"] is None
     mock_save_to_db.assert_called_once()
+    # Ensure FFmpeg error message is NOT in output
+    assert "Error: FFmpeg is not installed" not in result.output
+
+
+@patch("yt_whisper.cli.is_ffmpeg_available")
+def test_transcribe_command_ffmpeg_not_available(
+    mock_is_ffmpeg_available: MagicMock,
+) -> None:
+    """Test the 'transcribe' command when FFmpeg is NOT available."""
+    runner = CliRunner()
+
+    # Mock FFmpeg as not available
+    mock_is_ffmpeg_available.return_value = False
+
+    # Test the transcribe command
+    result = runner.invoke(
+        cli, ["transcribe", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"]
+    )
+
+    # Verify the output
+    assert result.exit_code != 0  # Should exit with an error
+    assert "Error: FFmpeg is not installed" in result.output
+    mock_is_ffmpeg_available.assert_called_once()
 
 
 @patch("yt_whisper.cli.list_transcripts")
