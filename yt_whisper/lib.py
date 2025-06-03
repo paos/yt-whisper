@@ -1,6 +1,7 @@
 # yt_whisper/lib.py
 import json
 import os
+from pathlib import Path
 import re
 import subprocess
 import tempfile
@@ -63,12 +64,13 @@ def download_audio(
     Returns:
         Tuple of (audio_file_path, metadata_file_path)
     """
-    output_file = os.path.join(temp_dir, f"ytw_audio_{youtube_id}.mp3")
-    metadata_file = os.path.join(temp_dir, f"ytw_audio_{youtube_id}.info.json")
+    temp_path = Path(temp_dir)
+    output_file = temp_path / f"ytw_audio_{youtube_id}.mp3"
+    metadata_file = temp_path / f"ytw_audio_{youtube_id}.info.json"
 
-    if os.path.exists(output_file) and not force:
+    if os.path.exists(str(output_file)) and not force:
         print(f"Using existing file: {output_file}")
-        return output_file, metadata_file
+        return str(output_file), str(metadata_file)
 
     print(f"Downloading audio from YouTube (ID: {youtube_id})...")
 
@@ -81,7 +83,7 @@ def download_audio(
                 "preferredquality": "192",
             }
         ],
-        "outtmpl": os.path.join(temp_dir, f"ytw_audio_{youtube_id}"),
+        "outtmpl": str(temp_path / f"ytw_audio_{youtube_id}"),
         "writethumbnail": False,
         "writeinfojson": True,
         "quiet": False,
@@ -103,7 +105,7 @@ def download_audio(
         print(f"An unexpected error occurred during download: {e}")
         raise
 
-    return output_file, metadata_file
+    return str(output_file), str(metadata_file)
 
 
 def transcribe_audio(
