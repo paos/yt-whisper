@@ -72,6 +72,9 @@ def download_audio(
 
     print(f"Downloading audio from YouTube (ID: {youtube_id})...")
 
+    # Construct outtmpl without relying on os.path.join so that test patches on
+    # os.path.join don't recurse when falling back to the real implementation.
+    outtmpl = f"{temp_dir}{os.sep}ytw_audio_{youtube_id}"
     ydl_opts = {
         "format": "bestaudio/best",
         "postprocessors": [
@@ -81,7 +84,7 @@ def download_audio(
                 "preferredquality": "192",
             }
         ],
-        "outtmpl": os.path.join(temp_dir, f"ytw_audio_{youtube_id}"),
+        "outtmpl": outtmpl,
         "writethumbnail": False,
         "writeinfojson": True,
         "quiet": False,
